@@ -7,6 +7,9 @@ import "bootstrap-vue/dist/bootstrap-vue.css"
 import Cornerstone from "cornerstone-core"
 import DicomParser from "dicom-parser"
 
+//import {parseDICOM} from "./dicom-manager"
+//parseDICOM()
+
 Vue.use(BootstrapVue)
 
 new Vue({
@@ -14,5 +17,3 @@ new Vue({
   render: h => h(App)
 })
 
-var a = function() { b = 1 }
-console.log("KKK")

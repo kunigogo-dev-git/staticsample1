@@ -2,7 +2,7 @@
   <div id="app">
 	<div class="container">
 	    <div class="page-header">
-	        <h1>Getting Started</h1>
+	        <h1>Dicom Parse Test</h1>
 	        <p class="lead">
 	            This is a walkthrough of how to use the dicomParser library.
 	        </p>
@@ -15,83 +15,38 @@
 	    </div>
 
 	    <div class="row">
-	        <div class="col-md-12">
+	        <div class="col-md-6">
 	            <div id="dropZone" @dragleave.prevent @dragover.prevent @drop.prevent="onDrop">
 	                <div class="panel panel-default ">
 	                    <div class="panel-heading">
-	                        <h3 class="panel-title">Example Output</h3>
+	                        <h3 class="panel-title">Example Output (drag file here)</h3>
 	                    </div>
 	                    <div class="panel-body">
 	                        <div class="row">
-	                            <div class="col-xs-12">
-	                                Parse Error: <span id="parseError"></span>
-	                            </div>
-	                        </div>
-	                        <div class="row">
-	                            <div class="col-xs-12">
-	                                SOP Instance UID: <span id="sopInstanceUid"></span>
-	                            </div>
-	                        </div>
-	                        <div class="row">
-	                            <div class="col-xs-12">
-	                                Patient Id: <span id="patientId"></span>
-	                            </div>
-	                        </div>
-	                        <div class="row">
-	                            <div class="col-xs-12">
-	                                Other Patient Ids: <span id="otherPatientIds"></span>
-	                            </div>
-	                        </div>
-	                        <div class="row">
-	                            <div class="col-xs-12">
-	                                Rows: <span id="rows"></span>
-	                            </div>
-	                        </div>
-	                        <div class="row">
-	                            <div class="col-xs-12">
-	                                ReferencedSOPClassUID: <span id="referencedSOPClassUID"></span>
-	                            </div>
-	                        </div>
-	                        <div class="row">
-	                            <div class="col-xs-3">
-	                                ImagePositionPatient:
-	                            </div>
-	                            <div class="col-xs-3">
-	                                <span id="imagePositionPatientX"></span>
-	                            </div>
-	                            <div class="col-xs-3">
-	                                <span id="imagePositionPatientY"></span>
-	                            </div>
-	                            <div class="col-xs-3">
-	                                <span id="imagePositionPatientZ"></span>
-	                            </div>
-	                        </div>
-	                        <div class="row">
-	                            <div class="col-xs-12">
-	                                ImagePositionPatient # of values: <span id="imagePositionPatientNumValues"></span>
-	                            </div>
-	                        </div>
-	                        <div class="row">
-	                            <div class="col-xs-12">
-	                                SopInstanceUid Data Offset and Length: <span id="sopInstanceUidDataOffsetAndLength"></span>
-	                            </div>
-	                        </div>
-	                        <div class="row">
-	                            <div class="col-xs-12">
-	                                SopInstanceUid VR: <span id="sopInstanceUidVR"></span>
+	                            <div>
+                                  
 	                            </div>
 	                        </div>
 	                    </div>
 	                </div>
-
 	            </div>
 	        </div>
+			<div class="col-md-6">
+				AAAA
+			</div>
 	    </div>
 	</div>
   </div>
 </template>
 
 <script>
+(function (a) { 
+	var b = a
+	console.log(b)
+} ("abc"));
+
+import {parseDICOMFile} from "./dicom-manager"
+
 export default {
   name: 'app',
   data () {
@@ -110,9 +65,15 @@ export default {
 
       for(let i = 0; i < fileList.length; i++){
         files.push(fileList[i]);
-      }
+	  }
+	  
+	  parseDICOMFile(files[0], parse_completed_callback)
     }
   },
+}
+
+var parse_completed_callback = function (result) {
+	document.getElementById("dropZone").innerHTML = result
 }
 </script>
 
@@ -124,6 +85,13 @@ export default {
   text-align: center;
   color: #2c3e50;
   margin-top: 60px;
+}
+
+#dropZone {
+	height: 400px;
+	width: 100%;
+	background-color: #F0F0F0;
+	overflow: auto;
 }
 
 h1, h2 {
