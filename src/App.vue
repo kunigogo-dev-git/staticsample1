@@ -1,15 +1,10 @@
 <template>
   <div id="app">
-	<div class="container">
+	<div class="container-fluid text-secondary bg-dark">
 	    <div class="page-header">
 	        <h1>Dicom Parse Test</h1>
 	        <p class="lead">
-	            This is a walkthrough of how to use the dicomParser library.
-	        </p>
-	        <p>
-	            This example shows how to use dicomParser to load a DICOM File and access its contents.  Drag
-	            a DICOM P10 file into the region below to see a select few attributes from it.  Use your browser's
-	            view source feature to see how this example was implemented along with source code comments.
+	            Full Javascript based DICOM Utility example.
 	        </p>
 	        <strong>Use of this example require IE10+ or any other modern browser.</strong>
 	    </div>
@@ -19,20 +14,31 @@
 	            <div id="dropZone" @dragleave.prevent @dragover.prevent @drop.prevent="onDrop">
 	                <div class="panel panel-default ">
 	                    <div class="panel-heading">
-	                        <h3 class="panel-title">Example Output (drag file here)</h3>
+	                        <h3 class="panel-title">Tag Output (drag file here)</h3>
 	                    </div>
 	                    <div class="panel-body">
-	                        <div class="row">
-	                            <div>
-                                  
-	                            </div>
-	                        </div>
+												<div class="table-responsive">
+													<table class="table table-striped table-sm bg-light">
+													<thead>
+														<tr>
+														<th>Tag</th>
+														<th>Value</th>
+														</tr>
+													</thead>
+													<tbody>
+														<tr v-for="tag in parsedTags" v-bind:key="tag.id">
+														<td>{{tag.id}}</td>
+														<td>{{tag.value}}</td>
+														</tr>
+													</tbody>
+													</table>
+												</div>
 	                    </div>
 	                </div>
 	            </div>
 	        </div>
-			<div class="col-md-6">
-				AAAA
+			<div id="viewer" class="col-md-6">
+				<div height="500px"></div>
 			</div>
 	    </div>
 	</div>
@@ -43,7 +49,9 @@
 (function (a) { 
 	var b = a
 	console.log(b)
-} ("abc"));
+} ("1 liner function notation."))
+
+var initialParsetTags = []
 
 import {parseDICOMFile} from "./dicom-manager"
 
@@ -51,7 +59,8 @@ export default {
   name: 'app',
   data () {
     return {
-      msg: 'Welcome to Your Vue.js App'
+			msg: 'Welcome to Your Vue.js App',
+			parsedTags: initialParsetTags
     }
   },
   methods:{
@@ -62,18 +71,29 @@ export default {
                      event.dataTransfer.files;
 
       let files = [];
-
+      	
+      this.$data.parsedTags[0]
       for(let i = 0; i < fileList.length; i++){
         files.push(fileList[i]);
-	  }
+	    }
 	  
-	  parseDICOMFile(files[0], parse_completed_callback)
+	    parseDICOMFile(files[0]).then( (result) => {
+				parse_completed_callback(this.$data, result)
+			})
     }
   },
 }
 
-var parse_completed_callback = function (result) {
-	document.getElementById("dropZone").innerHTML = result
+var parse_completed_callback = function (vuemodel, result) {
+	//document.getElementById("dropZone").innerHTML = result
+  vuemodel.parsedTags = result.parsed
+	// get the pixel data element (contains the offset and length of the data)
+	var pixelDataElement = result.dataset.elements.x7fe00010
+	// create a typed array on the pixel data (this example assumes 16 bit unsigned data)
+	var pixelData = new Uint16Array(result.dataset.byteArray.buffer, 
+																	pixelDataElement.dataOffset, 
+																	pixelDataElement.length/2)
+
 }
 </script>
 
@@ -84,7 +104,6 @@ var parse_completed_callback = function (result) {
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  margin-top: 60px;
 }
 
 #dropZone {

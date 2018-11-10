@@ -4,6 +4,8 @@ import App from './App.vue'
 import "bootstrap/dist/css/bootstrap.min.css"
 import "bootstrap-vue/dist/bootstrap-vue.css"
 
+import Axios from "axios"
+
 import Cornerstone from "cornerstone-core"
 import DicomParser from "dicom-parser"
 
