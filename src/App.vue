@@ -1,11 +1,10 @@
 <template>
-  <div id="app">
-	<div class="container-fluid text-secondary bg-dark">
+  <div id="app" class="container-fluid text-secondary bg-dark">
 	    <div class="page-header">
-	        <h1>Dicom Parse Test</h1>
-	        <p class="lead">
-	            Full Javascript based DICOM Utility example.
-	        </p>
+	        <h1>
+	            Dicom parse utility
+	        </h1>
+	        <strong>Full Javascript based DICOM Utility example.</strong>
 	        <strong>Use of this example require IE10+ or any other modern browser.</strong>
 	    </div>
 
@@ -14,7 +13,7 @@
 	            <div id="dropZone" @dragleave.prevent @dragover.prevent @drop.prevent="onDrop">
 	                <div class="panel panel-default ">
 	                    <div class="panel-heading">
-	                        <h3 class="panel-title">Tag Output (drag file here)</h3>
+	                        <strong class="panel-title">Tag Output (drag file here)</strong>
 	                    </div>
 	                    <div class="panel-body">
 												<div class="table-responsive">
@@ -42,18 +41,20 @@
 			</div>
 	    </div>
 	</div>
-  </div>
 </template>
 
 <script>
+import {parseDICOMFile,registerImage} from "./dicom-manager"
+import * as cornerstone from "cornerstone-core"
+import * as dicomParser from "dicom-parser"
+
+var initialParsetTags = [];
+/*
 (function (a) { 
 	var b = a
 	console.log(b)
-} ("1 liner function notation."))
-
-var initialParsetTags = []
-
-import {parseDICOMFile} from "./dicom-manager"
+} ("1 liner function notation."));
+*/
 
 export default {
   name: 'app',
@@ -78,7 +79,12 @@ export default {
 	    }
 	  
 	    parseDICOMFile(files[0]).then( (result) => {
-				parse_completed_callback(this.$data, result)
+				//put dumped array to data model of table 
+				this.$data.parsedTags = result.parsed
+				
+				registerImage(result.dataset,"image", "1")
+
+				setupImageView("image://1")
 			})
     }
   },
@@ -95,6 +101,58 @@ var parse_completed_callback = function (vuemodel, result) {
 																	pixelDataElement.length/2)
 
 }
+
+var setupImageView = function (imageid) {
+	// image enable the dicomImage element
+	const element = document.getElementById('viewer');
+	cornerstone.enable(element);
+
+	// load and display the image
+	cornerstone.loadImage(imageid).then(function(image) {
+		cornerstone.displayImage(element, image);
+
+		const viewport = cornerstone.getViewport(element);
+
+			/*
+		// Add event handler for the ww/wc presets
+		document.getElementById('softTissue').addEventListener('click', function() {
+				let viewport = cornerstone.getViewport(element);
+				viewport.voi.windowWidth = 400;
+				viewport.voi.windowCenter = 20;
+				cornerstone.setViewport(element, viewport);
+				document.getElementById('window').textContent = "WW/WC:" + Math.round(viewport.voi.windowWidth)
+						+ "/" + Math.round(viewport.voi.windowCenter);
+		});
+		*/
+
+		// add event handlers to mouse move to adjust window/center
+		element.addEventListener('mousedown', function (e) {
+				let lastX = e.pageX;
+				let lastY = e.pageY;
+
+				function mouseMoveHandler(e) {
+						const deltaX = e.pageX - lastX;
+						const deltaY = e.pageY - lastY;
+						lastX = e.pageX;
+						lastY = e.pageY;
+
+						let viewport = cornerstone.getViewport(element);
+						viewport.voi.windowWidth += (deltaX / viewport.scale);
+						viewport.voi.windowCenter += (deltaY / viewport.scale);
+						cornerstone.setViewport(element, viewport);
+				}
+
+				function mouseUpHandler() {
+						document.removeEventListener('mousemove', mouseMoveHandler);
+						document.removeEventListener('mouseup', mouseUpHandler);
+				}
+
+				document.addEventListener('mousemove', mouseMoveHandler);
+				document.addEventListener('mouseup', mouseUpHandler);
+		});
+	});
+}
+
 </script>
 
 <style>
@@ -107,7 +165,7 @@ var parse_completed_callback = function (vuemodel, result) {
 }
 
 #dropZone {
-	height: 400px;
+	height: 500px;
 	width: 100%;
 	background-color: #F0F0F0;
 	overflow: auto;
