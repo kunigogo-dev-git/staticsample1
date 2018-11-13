@@ -134,11 +134,13 @@ export function registerImage(dataSet, schema, id) {
                                   pixelDataElement.length/2)
   var height = dataSet.uint16("x00280010")
   var width = dataSet.uint16("x00280011")
+  var wl = dataSet.string("x00281050")
+  var ww = dataSet.string("x00281051")
 
   function getImage(imageId) {
     function getPixelData()
     {
-      if(imageId == id)
+      if(imageId == schema + "://" + id)
       {
         return pixelData;
       }
@@ -151,8 +153,8 @@ export function registerImage(dataSet, schema, id) {
       maxPixelValue : 4096,
       slope: 1.0,
       intercept : -1024,
-      windowCenter : 40,
-      windowWidth : 400,
+      windowCenter : parseFloat(wl),
+      windowWidth : parseFloat(ww),
       render: cornerstone.renderGrayscaleImage,
       getPixelData: getPixelData,
       rows: height,
