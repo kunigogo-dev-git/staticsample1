@@ -36,8 +36,8 @@
 	                </div>
 	            </div>
 	        </div>
-			<div id="viewer" class="col-md-6">
-				<div height="500px"></div>
+			<div class="col-md-6">
+				<div id="viewer" height="100px"></div>
 			</div>
 	    </div>
 	</div>
@@ -105,13 +105,20 @@ var parse_completed_callback = function (vuemodel, result) {
 var setupImageView = function (imageid) {
 	// image enable the dicomImage element
 	const element = document.getElementById('viewer');
-	cornerstone.enable(element);
+  element.style.width = '384px'
+	element.style.height = '384px'
+
+  cornerstone.enable(element);
+  element.style.width = '384px'
+	element.style.height = '384px'
+	cornerstone.resize(element);
 
 	// load and display the image
 	cornerstone.loadImage(imageid).then(function(image) {
-		cornerstone.displayImage(element, image);
 
-		const viewport = cornerstone.getViewport(element);
+    cornerstone.displayImage(element, image)
+
+		const viewport = cornerstone.getViewport(element)
 
 			/*
 		// Add event handler for the ww/wc presets
