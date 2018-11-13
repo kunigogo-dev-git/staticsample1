@@ -6,6 +6,7 @@ import "bootstrap-vue/dist/bootstrap-vue.css"
 
 import Axios from "axios"
 
+import {parseDICOMFile,registerImage} from "./dicom-manager"
 import * as cornerstone from "cornerstone-core"
 import * as dicomParser from "dicom-parser"
 
