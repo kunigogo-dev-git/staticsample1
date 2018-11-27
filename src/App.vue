@@ -1,54 +1,82 @@
 <template>
   <div id="app" class="container-fluid text-secondary bg-dark">
-	    <div class="page-header">
-	        <h1>
-	            Dicom parse utility
-	        </h1>
-	        <strong>Full Javascript based DICOM Utility example.</strong>
-	        <strong>Use of this example require IE10+ or any other modern browser.</strong>
-	    </div>
+	  <div class="page-header">
+	    <h1>
+	      Dicom parse utility
+	    </h1>
+	    <strong>Full Javascript based DICOM Utility example.</strong>
+	    <strong>Use of this example require IE10+ or any other modern browser.</strong>
+	  </div>
 
-	    <div class="row">
-	        <div class="col-md-6">
-	            <div id="dropZone" @dragleave.prevent @dragover.prevent @drop.prevent="onDrop">
-	                <div class="panel panel-default ">
-	                    <div class="panel-heading">
-	                        <strong class="panel-title">Tag Output (drag file here)</strong>
-	                    </div>
-	                    <div class="panel-body">
-												<div class="table-responsive">
-													<table class="table table-striped table-sm bg-light">
-													<thead>
-														<tr>
-														<th>Tag</th>
-														<th>Value</th>
-														</tr>
-													</thead>
-													<tbody>
-														<tr v-for="tag in parsedTags" v-bind:key="tag.id">
-														<td>{{tag.id}}</td>
-														<td>{{tag.value}}</td>
-														</tr>
-													</tbody>
-													</table>
-												</div>
-	                    </div>
-	                </div>
-	            </div>
+	  <div class="row">
+	    <div class="col-md-4">
+	      <div id="dropZone" @dragleave.prevent @dragover.prevent @drop.prevent="onDrop">
+	        <div class="panel panel-default ">
+	          <div class="panel-heading">
+	            <div class="panel-title">Dicom file instance list (drag file here)</div>
+	          </div>
+	          <div class="panel-body">
+						  <div class="table-responsive">
+							  <table class="table table-striped table-sm bg-light">
+								  <thead>
+									  <tr>
+										  <th>File</th>
+											<th>Instance#</th>
+											<th>Position</th>
+										</tr>
+									</thead>
+									<tbody>
+									  <tr v-for="fileEntry in analyzedFiles" v-bind:key="fileEntry.id">
+										  <td>{{fileEntry.file}}</td>
+										  <td>{{fileEntry.instancenumber}}</td>
+										  <td>{{fileEntry.position}}</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+	          </div>
 	        </div>
-			<div class="col-md-6">
-				<div id="viewer" height="100px"></div>
-			</div>
+	      </div>
 	    </div>
+			<div class="col-md-8">
+        <b-card no-body>
+          <b-tabs card>
+            <b-tab title="Viewer" active>
+              <div id="viewer" width="100px" height="100px" @dragleave.prevent @dragover.prevent @drop.prevent="onDropTestFile"></div>
+            </b-tab>
+            <b-tab title="Tags">
+						  <div class="table-responsive">
+							  <table class="table table-striped table-sm bg-light">
+								  <thead>
+									  <tr>
+										  <th>Tag</th>
+											<th>Value</th>
+										</tr>
+									</thead>
+									<tbody>
+									  <tr v-for="tag in parsedTags" v-bind:key="tag.id">
+										  <td>{{tag.id}}</td>
+										  <td>{{tag.value}}</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+            </b-tab>
+          </b-tabs>
+        </b-card>
+			</div>
+	  </div>
 	</div>
 </template>
 
 <script>
+import {handleFileFolderDrop} from "./file-manager"
 import {parseDICOMFile,registerImage} from "./dicom-manager"
 import * as cornerstone from "cornerstone-core"
 import * as dicomParser from "dicom-parser"
 
-var initialParsetTags = [];
+var initialParsetTags = []
+var analyzedFileLists = []
 /*
 (function (a) { 
 	var b = a
@@ -61,12 +89,14 @@ export default {
   data () {
     return {
 			msg: 'Welcome to Your Vue.js App',
-			parsedTags: initialParsetTags
+			parsedTags: initialParsetTags,
+			analyzedFiles: analyzedFileLists,
     }
   },
   methods:{
-    //inputタグとドラッグ&ドロップから呼ばれる
-    onDrop:function(event){
+    //Drop test dicom file
+    onDropTestFile:function(event){
+			event.preventDefault()
       let fileList = event.target.files ? 
                      event.target.files:
                      event.dataTransfer.files;
@@ -76,30 +106,30 @@ export default {
       this.$data.parsedTags[0]
       for(let i = 0; i < fileList.length; i++){
         files.push(fileList[i]);
-	    }
-	  
-	    parseDICOMFile(files[0]).then( (result) => {
-				//put dumped array to data model of table 
-				this.$data.parsedTags = result.parsed
-				
-				registerImage(result.dataset,"image", "1")
+      }
+    
+      parseDICOMFile(files[0]).then( (result) => {
+        //put dumped array to data model of table 
+        this.$data.parsedTags = result.parsed
+      	
+        registerImage(result.dataset,"image", "1")
 
-				setupImageView("image://1")
-			})
+        setupImageView("image://1")
+      })
+    },
+    //folder drop test
+    onDrop:function(event){
+      handleFileFolderDrop(event).then( (result) => {
+        this.$data.analyzedFiles.splice(0, analyzedFileLists.length)
+        for(let i = 0; i < result.entries.length; i++){
+          var filename = result.entries[i].split("/").pop()
+          this.$data.analyzedFiles.push( {"fullpath": result.entries[i],
+                                   "file": filename,
+                                  })
+        }
+      })
     }
   },
-}
-
-var parse_completed_callback = function (vuemodel, result) {
-	//document.getElementById("dropZone").innerHTML = result
-  vuemodel.parsedTags = result.parsed
-	// get the pixel data element (contains the offset and length of the data)
-	var pixelDataElement = result.dataset.elements.x7fe00010
-	// create a typed array on the pixel data (this example assumes 16 bit unsigned data)
-	var pixelData = new Uint16Array(result.dataset.byteArray.buffer, 
-																	pixelDataElement.dataOffset, 
-																	pixelDataElement.length/2)
-
 }
 
 var setupImageView = function (imageid) {
@@ -176,6 +206,17 @@ var setupImageView = function (imageid) {
 	width: 100%;
 	background-color: #F0F0F0;
 	overflow: auto;
+}
+#viewer {
+	height: 128px;
+	width: 128px;
+	background-color: rgb(78, 78, 78);
+}
+
+#dropforfolder {
+	height: 200px;
+	width: 100%;
+	border-style: dashed;
 }
 
 h1, h2 {
