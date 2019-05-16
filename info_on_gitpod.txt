@@ -1,0 +1,7 @@
+デバッグ方法
+
+node が使えるのでnpm install http-serverをして、
+http-server -p 8080
+すると、ポートは解放されていないがExposeする？と聞かれるのでOKすれば
+WebServer経由アクセル出来る
+
